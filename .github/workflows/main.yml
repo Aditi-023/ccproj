@@ -1,0 +1,51 @@
+name: Build and Deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  APP_NAME: springboot-thymeleaf-crud-web-app
+  APP_VERSION: 0.0.1-SNAPSHOT
+  SERVER_URL: 3.95.225.115:8080
+  SERVER_USER: ec2-user
+  SERVER_KEY: ${{ secrets.SERVER_KEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '19'
+
+      - name: Build JAR
+        run: mvn clean package
+
+      - name: Upload JAR to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ env.SERVER_URL }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_KEY }}
+          source: target/${{ env.APP_NAME }}-${{ env.APP_VERSION }}.jar
+          target: /home/${{ env.SERVER_USER }}/${{ env.APP_NAME }}.jar
+
+      - name: Restart Application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_URL }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_KEY }}
+          script: |
+            sudo systemctl stop springboot-thymeleaf-crud-web-app.service
+            sudo systemctl start springboot-thymeleaf-crud-web-app.service
+
+      - name: Test Deployment
+        run: curl -I your-server-url
