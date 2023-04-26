@@ -12,4 +12,3 @@ public class SpringbootThymeleafCrudWebAppApplication {
 
 }
 
-//scp -i ccproj.pem springboot-thymeleaf-crud-pagination-sorting-webapp-master\target\springboot-thymeleaf-crud-web-app-0.0.1-SNAPSHOT.jar ec2-user@3.95.225.115
